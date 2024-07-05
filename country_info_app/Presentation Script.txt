@@ -1,0 +1,85 @@
+### Presentation Script
+
+#### 1. Introduction
+
+" I'd like to present a project that fetches and displays detailed information about a country using the REST Countries API. This project also showcases basic Object-Oriented Programming principles and uses the Pillow library to display the country's flag. Additionally, we'll see how we can fetch and display city information within each country."
+
+#### 2. Project Overview
+
+"The project consists of two main components: a class to fetch and display country information (`CountryInfo`) and a main script to interact with the user and display the results."
+
+#### 3. Code Walkthrough
+
+#File: `country.py`*
+
+#```python
+import requests
+
+class CountryInfo:
+    def __init__(self):
+        self.base_url = "https://restcountries.com/v3.1/name/"
+
+    def get_country_info(self, country_name):
+        url = f"{self.base_url}{country_name}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()[0]  # Get the first result
+            return {
+                'name': data.get('name', {}).get('common', 'N/A'),
+                'capital': data.get('capital', ['N/A'])[0],
+                'region': data.get('region', 'N/A'),
+                'subregion': data.get('subregion', 'N/A'),
+                'population': data.get('population', 'N/A'),
+                'area': data.get('area', 'N/A'),
+                'flag': data.get('flags', {}).get('png', 'N/A')
+            }
+        else:
+            return None
+
+#Explanation*:
+
+# "We start by importing the `requests` module to make HTTP requests to the REST Countries API."
+# "The `CountryInfo` class has a method `get_country_info` that takes a country name, makes an API request, and returns relevant information about the country if the request is successful."
+
+#File: `main.py`*
+
+#```python
+from country import CountryInfo
+import requests
+from PIL import Image
+from io import BytesIO
+
+def main():
+    country_name = input("Enter the country name: ")
+    
+    country_info = CountryInfo()
+    info = country_info.get_country_info(country_name)
+    
+    if info:
+        print(f"Name: {info['name']}")
+        print(f"Capital: {info['capital']}")
+        print(f"Region: {info['region']}")
+        print(f"Subregion: {info['subregion']}")
+        print(f"Population: {info['population']}")
+        print(f"Area: {info['area']} km²")
+        print(f"Flag: {info['flag']}")
+
+        # Display the flag image
+        response = requests.get(info['flag'])
+        if response.status_code == 200:
+            img = Image.open(BytesIO(response.content))
+            img.show()
+        else:
+            print("Failed to retrieve the flag image.")
+    else:
+        print("Country not found or API request failed.")
+
+if __name__ == "__main__":
+    main()
+
+
+#Explanation*:
+
+- "In the main script, we start by importing the necessary modules: `CountryInfo` from `country.py`, `requests` for additional HTTP requests, and `Pillow` for image processing."
+- "The `main` function prompts the user to enter a country name, fetches the country information using the `CountryInfo` class, and displays the information."
+- "If the country information is successfully retrieved, it prints the details and displays the flag using the Pillow library."
